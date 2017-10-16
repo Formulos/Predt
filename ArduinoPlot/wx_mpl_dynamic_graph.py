@@ -16,7 +16,6 @@ Note: press Enter in the 'manual' text box to make a new value affect the plot.
 
 import argparse
 import os
-import wx
 import numpy as np
 
 import matplotlib

@@ -1,61 +1,51 @@
-"""
-Listen to serial, return most recent numeric values
-Lots of help from here:
-http://stackoverflow.com/questions/1093598/pyserial-how-to-read-last-line-sent-from-serial-device
-"""
-from threading import Thread
-import time
-import serial
+import sys, serial, argparse
+import numpy as np
+from time import sleep
+from collections import deque
 
-last_received = ''
-
-
-def receiving(serial_port):
-    global last_received
-    buffer = ''
-    while True:
-        buffer += serial_port.read_all()
-        if '\n' in buffer:
-            lines = buffer.split('\n')  # Guaranteed to have at least 2 entries
-            last_received = lines[-2]
-            # If the Arduino sends lots of empty lines, you'll lose the last
-            # filled line, so you could make the above statement conditional
-            # like so: if lines[-2]: last_received = lines[-2]
-            buffer = lines[-1]
-
+import matplotlib.pyplot as plt 
+import matplotlib.animation as animation
+import struct
 
 class SerialData(object):
 
-    def __init__(self, **kwargs):
-        try:
-            self.serial_port = serial.Serial(**kwargs)
-        except serial.serialutil.SerialException:
-            # no serial connection
-            self.serial_port = None
-        else:
-            Thread(target=receiving, args=(self.serial_port,)).start()
+    def __init__(self):
+        self.x = [] 
+        self.y = []
+        self.baud_rate = 9600
+        self.max_value = 20
+        self.propriedade = "Corrente"
 
-    def next(self):
-        if self.serial_port is None:
-            # return anything so we can test when Arduino isn't connected
-            return 100
-        # return a float value or try a few times until we get one
-        for i in range(40):
-            raw_line = last_received
+    def main(self):
+        cont = 0
+        arduinoData = serial.Serial("COM3",self.baud_rate)
+        stuf = 20
+        while cont < stuf:
+        
+            cont+=1
             try:
-                return float(raw_line.strip())
-            except ValueError:
-                print 'bogus data', raw_line
-                time.sleep(.005)
-        return 0.
+                arduinoString = arduinoData.readline()
+                arduinoString = arduinoString[:-2]
+                arduinoString = arduinoString.decode()            
+                Data = (float(arduinoString))
+                print(Data)
+                self.increment(cont,Data)        
+            except Exception as e:
+                pass
+        plt.plot(self.x,self.y,"b")
+        plt.show()
+        stuf +=20
 
-    def __del__(self):
-        if self.serial_port is not None:
-            self.serial_port.close()
+    def createPlot(self):
+        plt.plot(self.x)
+    
+    def increment(self,x,y):
+        self.x.append(x)
+        self.y.append(y)
 
+    def harning():
+        print("Valor acima do normal")
+        
 
-if __name__ == '__main__':
-    s = SerialData('com4')
-    for i in range(500):
-        time.sleep(.015)
-        print s.next()
+if __name__ == "__main__":
+    SerialData().main()
