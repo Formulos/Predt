@@ -6,6 +6,7 @@ from drawnow import *
 import matplotlib.pyplot as plt 
 import matplotlib.animation as animation
 import struct
+import tkinter as TK
 
 class SerialData(object):
 
@@ -32,13 +33,19 @@ class SerialData(object):
                 Data = self.getValue(arduinoString)
                 numberCont += 1
                 self.increment(numberCont,Data)
+
+                root = Tk()
+
                 
                 if (len(self.y) > self.max_value):
                     self.y.pop(0)
                 
                 if (self.y[-1] > self.criticalValue):
-                    self.harning() 
-            
+                    self.warning()
+                    T = Text(root, height=2, width=30)
+                    T.pack()
+                    T.insert(END, "Valor critico")
+
             except Exception as e:
                 print(e)
             drawnow(self.createPlot)               
@@ -52,7 +59,7 @@ class SerialData(object):
         for i in range(self.max_value):
             self.lineLim.append(self.criticalValue)
 
-    def harning(self):
+    def warning(self):
         print(self.propriedade, "fora do normal")
     
     def createPlot(self):
